@@ -67,26 +67,7 @@
 !(bind! &evaluatedRules (pln-directly-evaluate &ruleSpace &perceptaSpace))
 !(println! "=== EVALUATION COMPLETE ===")
 
-;; ============================================================================
-;; Verification and Output
-;; ============================================================================
 
-;; Display the empirical evaluation results
-!(println! "")
-!(println! "=== EVALUATION RESULTS ===")
-!(println! "")
-!(println! "Rule 1 (LEFT_SQUARE + STILL_ALIVE):")
-!(println! "  Expected: 3 matches out of 10 = 0.3 frequency")
-!(println! "  Expected Confidence: 3/(800+3) ≈ 0.00375")
-!(println! "")
-!(println! "Rule 2 (CENTER_SQUARE + STILL_ALIVE):")
-!(println! "  Expected: 3 matches out of 10 = 0.3 frequency")
-!(println! "  Expected Confidence: 3/(800+3) ≈ 0.00375")
-!(println! "")
-!(println! "Rule 3 (RIGHT_SQUARE + STILL_ALIVE):")
-!(println! "  Expected: 1 match out of 10 = 0.1 frequency")
-!(println! "  Expected Confidence: 1/(800+1) ≈ 0.00125")
-!(println! "")
 
 ;; Display updated rules
 !(println! "Evaluated rules:")
