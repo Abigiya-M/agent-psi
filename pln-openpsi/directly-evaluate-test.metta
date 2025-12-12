@@ -1,22 +1,12 @@
-;; ROCCA Direct Evaluation Test Suite
-;; 
-;; Tests the directly_evaluate system by:
-;; 1. Creating a percepta history (agent's observations over time)
-;; 2. Creating rules with initial context STVs
-;; 3. Running pln-directly-evaluate to ground context STVs in empirical data
-;; 4. Verifying that context STVs are updated correctly
-;;
-
 !(import! &self directly-evaluate)
-!(import! &self utils:directly-evaluate-utils)
-!(import! &self utils:rule-ops)
 !(import! &self utils:util)
+!(import! &self utils:rule-ops)
+!(import! &self utils:directly-evaluate-utils)
 
 ;; ============================================================================
 ;; Test Setup: Create Percepta Space with Historical Observations
 ;; ============================================================================
 
-;; Create percepta space to store observations
 !(bind! &perceptaSpace (new-space))
 
 ;; Add observations from agent's history
