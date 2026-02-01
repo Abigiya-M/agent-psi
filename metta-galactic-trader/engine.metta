@@ -31,10 +31,19 @@
 (: BetaRule Type)
 
 ;; Sample from Beta distribution for action selection
-;; In Metta, we use a simple heuristic: alpha / (alpha + beta)
-;; This gives the expected value of Beta(alpha, beta)
+;; NOTE: Metta runtime here does not call an external RNG for a true
+;; Thompson-sample. To keep the engine simple and deterministic we
+;; expose an expected-value heuristic which is alpha/(alpha+beta).
+;; If true stochastic Thompson sampling is required, bind a host
+;; random-beta primitive and replace `beta-sample` implementation.
 (: beta-expected-value (-> Number Number Number))
 (= (beta-expected-value $a $b) (/ $a (+ $a $b)))
+
+;; Alias representing the sampling interface. Currently returns the
+;; deterministic expected value; named `beta-sample` to make it clear
+;; where to swap in a stochastic implementation later.
+(: beta-sample (-> Number Number Number))
+(= (beta-sample $a $b) (beta-expected-value $a $b))
 
 ;; Update beta parameters based on reward
 ;; Positive reward: increase alpha (good action)
@@ -43,10 +52,10 @@
 (: update-beta-params (-> Number Number Number Expression))
 (= (update-beta-params $a $b $reward)
    (if (> $reward 0)
-       (BetaRule (+ $a $reward) $b)
-       (if (< $reward 0)
-           (BetaRule $a (+ $b (abs $reward)))
-           (BetaRule (+ $a 1) (+ $b 1)))))
+      (list (+ $a $reward) $b)
+      (if (< $reward 0)
+         (list $a (+ $b (abs $reward)))
+         (list (+ $a 1) (+ $b 1)))))
 
 ;; Get applicable rules for a given state
 ;; Returns list of (rule, sample-value) pairs
@@ -74,5 +83,13 @@
 ;; Helper: get sample value from a rule
 ;; For now, use simple heuristic (beta expected value)
 (: get-sample-value (-> Expression Number))
-(= (get-sample-value (BetaRule $a $b))
-   (beta-expected-value $a $b))
+;; Accepts a BetaRule wrapper. Returns a numeric score used for
+;; selection. Currently uses `beta-sample` (deterministic expected
+;; value). If BetaRule shape changes, update this matcher.
+(= (get-sample-value (BetaRule $rule $a $b))
+   (beta-sample $a $b))
+
+;; Fallback: if a bare Rule is passed (no beta parameters), return
+;; 0.5 as a neutral score so bare rules can be compared safely.
+(= (get-sample-value (Rule $id $action $from $to))
+   0.5)

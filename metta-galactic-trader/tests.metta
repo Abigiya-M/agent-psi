@@ -173,6 +173,4 @@
     (get-money-from-sim (init-simulation))
     100)
 
-;; Note: Full end-to-end tests would require more complex
-;; assertion capabilities. These basic tests verify individual
-;; components work correctly.
+

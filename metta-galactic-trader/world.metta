@@ -63,7 +63,9 @@
 (= (set-money (State $p $i $m) $new-m) (State $p $i $new-m))
 
 ;; State valuation function for reward calculation
-;; Value = Money + average cost of held item
+;; Value = Money + average cost of held item (single deterministic clause)
 (: state-value (-> Expression Number))
-(= (state-value (State $p None $m)) $m)
-(= (state-value (State $p $i $m)) (+ $m (average-cost $i)))
+(= (state-value (State $p $i $m))
+   (if (== $i None)
+       $m
+       (+ $m (average-cost $i))))
