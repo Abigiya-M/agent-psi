@@ -1,13 +1,16 @@
 ;; General Rule helpers
 
-(: createRule (-> Expression Expression))
-(= (createRule ($ruleId $STV $implication)) (
-    ; TODO
-))
+;; (: createRule (-> Number Number Expression Expression))
+(= (createRule $ruleId $ttv $rule) (
+    let* (
+        ($complexity (calculateComplexity $rule))
+        ($_ (println! (Rule $complexity)))
 
-(: createRule (-> Expression Expression))
-(= (createRule ($ruleId $STV $context $action $goal)) (
-    ; TODO
+        ((: Rule $id $t $stv $comp $implication) $rule)
+        ($_ (println! (: Rule $id $t $stv $comp $implication)))
+        ($newRule (: Rule $ruleId (TTV $ttv) $stv (Complexity $complexity) $implication))
+        ($_ (println! (New Rule $newRule)))
+    ) $newRule
 ))
 
 (: chainActions (-> Expression Expression Expression))
@@ -45,23 +48,39 @@
 ))
 
 ;; This could be optimized by adding an atom that tracks the max TTV in the rule space instead of searching every time
-(: getCurrentTimeCycle (-> hyperon::space::DynSpace Number))
-(= (getCurrentTimeCycle $ruleSpace) (
+(: getCurrentTimeCycleFromSpace (-> hyperon::space::DynSpace Number))
+(= (getCurrentTimeCycleFromSpace $ruleSpace) (
     let* (
         ($rules (collapse (get-atoms $ruleSpace)))
         ($ttvValues (map-atom $rules $rule (extractRule TTV $rule)))
-        ($_ (println! ("Current TTV values: " $ttvValues)))
-    ) (max-atom $ttvValues) ;; For some reason max-atom returns a float instead of int
+        ($currTTV (max-atom $ttvValues))
+    ) (toInt $currTTV)
+))
+
+(: getCurrentTimeCycle (-> Expression Number))
+(= (getCurrentTimeCycle $rules) (
+    let* (
+        ($ttvValues (map-atom $rules $rule (extractRule TTV $rule)))
+        ($currTTV (max-atom $ttvValues))
+    ) (toInt $currTTV)
 ))
 
 ;; 
-(: getLatestRuleId (-> hyperon::space::DynSpace Number))
-(= (getLatestRuleId $ruleSpace) (
+(: getLatestRuleIdFromSpace (-> hyperon::space::DynSpace Number))
+(= (getLatestRuleIdFromSpace $ruleSpace) (
     let* (
         ($rules (collapse (get-atoms $ruleSpace)))
         ($ruleIds (map-atom $rules $rule (extractRule Id $rule)))
-        ($_ (println! ("Current Rule IDs: " $ruleIds)))
-    ) (max-atom $ruleIds)
+        ($currId (max-atom $ruleIds))
+    ) (toInt $currId)
+))
+
+(: getLatestRuleId (-> Expression Number))
+(= (getLatestRuleId $rules) (
+    let* (
+        ($ruleIds (map-atom $rules $rule (extractRule Id $rule)))
+        ($currId (max-atom $ruleIds))
+    ) (toInt $currId)
 ))
 
 ;; Filters rules from a rule space based on matching action values
@@ -126,3 +145,19 @@
             (cons-atom $head $restMatches)
             $restMatches))
 ))
+
+;; (: processRules (-> Expression Number Number Expression))
+(= (processRules $rules $ruleId $ttv) (
+    if (== $rules ())
+        ()
+        (let* (
+            ($_ (println! (Processing Rulingtons $rules)))
+            (($head $tail) (decons-atom $rules))
+            ($newRule (createRule $ruleId $ttv $head))
+            ($nextRuleId (+ 1 $ruleId))
+            ($rest (processRules $tail $nextRuleId $ttv))
+        ) (cons-atom $newRule $rest))
+))
+
+;; (= (Rules) ((: Rule 1 (TTV 0) (STV 0.5 0.002) (Complexity 1) (IMPLICATION (AND (Context (STV 0.2 0.1) (AND ((LEFT_SQUARE (STV 0.2 0.1)) (STILL_ALIVE (STV 0.2 0.1))))) (Action (SEQ_AND (MOVE_RIGHT)))) (Goal (STV 0.2 0.1) (AND ((CENTER_SQUARE (STV 0.2 0.1)) (STILL_ALIVE (STV 0.2 0.1))))))) (: Rule 3 (TTV 0) (STV 0.5 0.002) (Complexity 1) (IMPLICATION (AND (Context (STV 0.2 0.1) (AND ((LEFT_SQUARE (STV 0.2 0.1)) (STILL_ALIVE (STV 0.2 0.1))))) (Action (SEQ_AND (MOVE_RIGHT)))) (Goal (STV 0.2 0.1) (AND ((CENTER_SQUARE (STV 0.2 0.1)) (DEAD (STV 0.2 0.1))))))) (: Rule 2 (TTV 0) (STV 0.5 0.002) (Complexity 1) (IMPLICATION (AND (Context (STV 0.2 0.1) (AND ((CENTER_SQUARE (STV 0.2 0.1)) (STILL_ALIVE (STV 0.2 0.1))))) (Action (SEQ_AND (MOVE_RIGHT)))) (Goal (STV 0.2 0.1) (AND ((RIGHT_SQUARE (STV 0.2 0.1)) (STILL_ALIVE (STV 0.2 0.1)))))))))
+;; !(processRules (Rules) 10 1)
