@@ -58,4 +58,15 @@
 (: round (-> Number Number Number))
 (= (round $num $sig) ((py-atom round) $num $sig))
 
+(: toInt (-> Number Number))
+(= (toInt $num) ((py-atom int) $num))
 
+(: flattenList (-> Expression Expression))
+(= (flattenList $list) (
+    if (== () $list)
+        ()
+        (let* (
+            (($head $tail) (decons-atom $list))
+            ($rest (flattenList $tail))
+        ) (union-atom $head $rest))
+))
